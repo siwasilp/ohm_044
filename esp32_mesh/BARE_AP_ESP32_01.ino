@@ -1,0 +1,52 @@
+//======  620828 - ESP32 to ESP32 [P2P]     ======
+//======  Rqs. AJP 620827  CP. PK_LAB 2019  ====== 
+//======  File 1/2 : BARE_AP_ESP32_01.ino   ======
+
+#include <WiFi.h>
+WiFiServer server(80);
+IPAddress IP(192,168,4,15);  
+IPAddress mask = (255, 255, 255, 0);
+
+byte ledPin = 2;
+char ssid[] = "pk_007";           // SSID of your AP
+char pass[] = "12345678";         // password of your AP
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println();
+  Serial.println("BARE_AP_ESP32_01.ino");
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(ssid,pass);
+  WiFi.softAPConfig(IP, IP, mask);
+  server.begin();
+  pinMode(ledPin, OUTPUT);
+  Serial.println("Server started.");
+  Serial.print("IP: ");     Serial.println(WiFi.softAPIP());
+  Serial.print("MAC:");     Serial.println(WiFi.softAPmacAddress());
+}
+
+String msg = "";       // *** OK use it
+String request = "";   // *** OK use it
+
+void loop() {
+  Commu_ap();
+}
+
+void Commu_ap(){
+  WiFiClient client = server.available();
+  //============================================
+  if (Serial.available()) {
+  msg=Serial.readString();  }
+  //===========================================
+  if (!client) {return;}
+  digitalWrite(ledPin, HIGH);
+  request = client.readStringUntil('\r');
+  Serial.println("********************************[My AP.]");
+  Serial.println(" INP > " + request);
+  client.flush();
+  Serial.print(  " OUT > ");   Serial.println(msg);
+  client.println(msg + "\r");  client.println(request + "\r");
+  digitalWrite(ledPin, LOW); 
+  }
+  
+//================== Commu_ap || OK. ==================
